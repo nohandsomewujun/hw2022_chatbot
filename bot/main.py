@@ -29,7 +29,10 @@ def on_error(ws, error):
 
 def on_message(ws, json_data):
     data = loads(json_data)
+    # print(data)
+    # sleep(10)
     if data['type'] == 'push':
+        print(data['body']['_CID'])
         if data['body']['event'] == 'ReceiveMsg' and data['body']['_CID'] == listen_CID:
             # Acquire message content when receive one
             body = {}
@@ -47,16 +50,20 @@ def on_message(ws, json_data):
         if data['body']['code'] != 0:
             print('(something wrong!) ===>' + data['body']['msg'])
         else:
-            if 'messages' in data['body']:
-                for elem in data['body']['messages']:
+            if 'messages' in data['body'] and data['body']['messages'][0]['direction'] == 'In':
+                for elem in data['body']['messages'][0]['segments']:
                     if elem['type'] == 'plaintext':
                         # Call bot for answer and send the answer
                         answer = B.speak(elem['content']['text'])
                         message_content = {}
                         message_content['text'] = answer
+                        message_segment = {}
+                        message_segment['type'] = 'plaintext'
+                        message_segment['content'] = message_content
                         message = {}
-                        message['type'] = 'plaintext'
-                        message['content'] = message_content
+                        message['segments'] = [message_segment]
+                        segments = []
+                        segments.append(message)
                         body = {}
                         body['_CID'] = listen_CID
                         body['message'] = message
