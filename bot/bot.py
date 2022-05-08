@@ -430,7 +430,8 @@ class bot:
                     return output_word
 
             except KeyError:
-                print("Error: Encountered unknown word.")
+                s = "我觉得这是你应该自己要思考的问题，不属于我回答的范畴😅"
+                return s
 
         # Begin chatting (uncomment and run the following line to begin)
         output_s = evaluateInput(self.encoder, self.decoder, self.searcher, self.voc, input_s)
