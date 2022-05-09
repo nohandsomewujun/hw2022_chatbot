@@ -343,9 +343,9 @@ class bot:
         # Load model if a loadFilename is provided
         if loadFilename:
             # If loading on same machine the model was trained on
-            checkpoint = torch.load(loadFilename)
+            #checkpoint = torch.load(loadFilename)
             # If loading a model trained on GPU to CPU
-            #checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
+            checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
             encoder_sd = checkpoint['en']
             decoder_sd = checkpoint['de']
             encoder_optimizer_sd = checkpoint['en_opt']
@@ -430,7 +430,7 @@ class bot:
             try:
                     # Get input sentence
                     s_en = covert_zh_to_en(input_s)
-                    input_sentence = input_s
+                    input_sentence = s_en
                     print(input_sentence)
                     # Normalize sentence
                     input_sentence = normalizeString(input_sentence)
@@ -442,7 +442,7 @@ class bot:
                     print(output_word)
                     output_word = output_word.replace('.', '')
                     output_zh = covert_en_to_zh(output_word)
-                    return output_word
+                    return output_zh
 
             except KeyError:
                 s = "我觉得这是你应该自己要思考的问题，不属于我回答的范畴😅"
