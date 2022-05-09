@@ -18,6 +18,8 @@ from io import open
 import itertools
 import math
 
+from googletrans import Translator
+
 
 
 
@@ -414,12 +416,22 @@ class bot:
             decoded_words = [voc.index2word[token.item()] for token in tokens]
             return decoded_words
 
+        def covert_en_to_zh(s):
+            translator = Translator()
+            return translator.translate(s, dest='zh-CN').text
+        
+        def covert_zh_to_en(s):
+            translator = Translator()
+            return translator.translate(s).text
+
 
         def evaluateInput(encoder, decoder, searcher, voc, input_s):
             input_sentence = ''
             try:
                     # Get input sentence
+                    s_en = covert_zh_to_en(input_s)
                     input_sentence = input_s
+                    print(input_sentence)
                     # Normalize sentence
                     input_sentence = normalizeString(input_sentence)
                     # Evaluate sentence
@@ -427,6 +439,9 @@ class bot:
                     # Format and print response sentence
                     output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
                     output_word = ' '.join(output_words)
+                    print(output_word)
+                    output_word = output_word.replace('.', '')
+                    output_zh = covert_en_to_zh(output_word)
                     return output_word
 
             except KeyError:
