@@ -74,7 +74,7 @@ class bot:
                 outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs)
                 # Sum bidirectional GRU outputs
                 outputs = outputs[:, :, :self.hidden_size] + \
-                    outputs[:, :, self.hidden_size:]
+                          outputs[:, :, self.hidden_size:]
                 # Return output and final hidden state
                 return outputs, hidden
 
@@ -198,8 +198,8 @@ class bot:
 
         model_name = 'cb_model'
         attn_model = 'dot'
-        #attn_model = 'general'
-        #attn_model = 'concat'
+        # attn_model = 'general'
+        # attn_model = 'concat'
         hidden_size = 500
         encoder_n_layers = 2
         decoder_n_layers = 2
@@ -217,7 +217,7 @@ class bot:
         # Load model if a loadFilename is provided
         if loadFilename:
             # If loading on same machine the model was trained on
-            #checkpoint = torch.load(loadFilename)
+            # checkpoint = torch.load(loadFilename)
             # If loading a model trained on GPU to CPU
             checkpoint = torch.load(
                 loadFilename, map_location=torch.device('cpu'))
@@ -299,7 +299,7 @@ class bot:
             translator = Translator()
             return translator.translate(s).text
 
-        def evaluateInput(encoder, decoder, searcher, voc, input_s):
+        def evaluateInput(encoder, decoder, searcher, voc):
             input_sentence = ''
             try:
                 # Get input sentence
@@ -313,7 +313,7 @@ class bot:
                     encoder, decoder, searcher, voc, input_sentence)
                 # Format and print response sentence
                 output_words[:] = [x for x in output_words if not (
-                    x == 'EOS' or x == 'PAD')]
+                        x == 'EOS' or x == 'PAD')]
                 output_word = ' '.join(output_words)
                 print(output_word)
                 output_word = output_word.replace('.', '')
@@ -326,5 +326,5 @@ class bot:
 
         # Begin chatting (uncomment and run the following line to begin)
         output_s = evaluateInput(
-            self.encoder, self.decoder, self.searcher, self.voc, input_s)
+            self.encoder, self.decoder, self.searcher, self.voc)
         return output_s
