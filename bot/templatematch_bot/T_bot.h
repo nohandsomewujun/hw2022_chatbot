@@ -22,7 +22,7 @@ private:
     //用来将./q&a/qa.txt中的qa读入map
     void read_qa_into_map();
 public:
-    //构造函数
+    //构造函数，类创建时可以自动读入map
     T_bot();
     //用来计算匹配，将最大的几个匹配的string放入highest_score_q中
     //!!!记住每次应当清空highest_score_q后再使用
