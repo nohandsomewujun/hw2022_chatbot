@@ -19,18 +19,16 @@ private:
     std::map<std::string, std::vector<std::string>> qa_map;
     //用来存放得分最大的问题string
     std::vector<std::string> highest_score_q;
-public:
-    //用来得到qa_map这一私有变量
-    std::map<std::string, std::vector<std::string>> get_map(){return this->qa_map;}
-    //用来得到highest_score_q这一私有变量
-    std::vector<std::string> get_highest_score_q(){return this->highest_score_q;}
     //用来将./q&a/qa.txt中的qa读入map
-    void read_qa_into_map(std::map<std::string, std::vector<std::string>>& qa_map);
+    void read_qa_into_map();
+public:
+    //构造函数
+    T_bot();
     //用来计算匹配，将最大的几个匹配的string放入highest_score_q中
     //!!!记住每次应当清空highest_score_q后再使用
-    void calculate_score(const std::string input_s, std::vector<std::string>& highest_score_q, const std::map<std::string, std::vector<std::string>> qa_map);
+    void calculate_score(const std::string& input_s);
     //利用随机数将highest_score_q中的某个string取出，作为map的key求出对应的value作为返回值
-    std::string speak(const std::string input_s);
+    std::string speak(const std::string& input_s);
 };
 
 
