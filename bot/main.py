@@ -7,6 +7,8 @@ from requests import utils
 from json import loads
 import os
 from requests_toolbelt import MultipartEncoder
+import ctypes
+from ctypes import *
 
 import bot
 
@@ -18,6 +20,11 @@ listen_CID = 0
 
 # init bot
 B = bot.bot()
+
+lib = ctypes.cdll.LoadLibrary('./templatematch_bot/T_bot_pyCall.so')
+objptr = lib.newTBot()
+
+choice = True
 
 def on_open(ws):
     print('connect success!')
@@ -54,26 +61,35 @@ def on_message(ws, json_data):
                 for elem in data['body']['messages'][0]['segments']:
                     if elem['type'] == 'plaintext':
                         # Call bot for answer and send the answer
-                        answer = B.speak(elem['content']['text'])
-                        message_content = {}
-                        message_content['text'] = answer
-                        message_segment = {}
-                        message_segment['type'] = 'plaintext'
-                        message_segment['content'] = message_content
-                        message = {}
-                        message['segments'] = [message_segment]
-                        segments = []
-                        segments.append(message)
-                        body = {}
-                        body['_CID'] = listen_CID
-                        body['message'] = message
-                        data_send = {'cmd': 'post_message', 'body': body}
-                        json_data_send = dumps(data_send)
-                        try:
-                            ws.send(json_data_send)
-                        except:
-                            print('connection is already closed.')
-                            sys.exit(0)
+                        if (elem['content']['text'] == 'change bot'):
+                            choice = !choice
+                        else:
+                            if (choice):
+                                answer = B.speak(elem['content']['text'])
+                            else:
+                                instr = bytes(elem['content']['text'], encoding='utf8')
+                                outstr = create_string_buffer(" ", 100)
+                                lib.call(objptr, instr, outstr)
+                                answer = outstr.value
+                            message_content = {}
+                            message_content['text'] = answer
+                            message_segment = {}
+                            message_segment['type'] = 'plaintext'
+                            message_segment['content'] = message_content
+                            message = {}
+                            message['segments'] = [message_segment]
+                            segments = []
+                            segments.append(message)
+                            body = {}
+                            body['_CID'] = listen_CID
+                            body['message'] = message
+                            data_send = {'cmd': 'post_message', 'body': body}
+                            json_data_send = dumps(data_send)
+                            try:
+                                ws.send(json_data_send)
+                            except:
+                                print('connection is already closed.')
+                                sys.exit(0)
 
 
 
