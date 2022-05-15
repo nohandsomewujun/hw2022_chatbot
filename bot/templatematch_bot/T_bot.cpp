@@ -8,7 +8,7 @@
 void T_bot::read_qa_into_map() {
     //TODO:本函数用来将./q&a/qa.txt中的question作为key，answer作为对应的value读入qa_map中
     //记得裁剪掉q:,a:
-    std::ifstream infile("q&a//qa.txt");
+    std::ifstream infile("./q&a/qa.txt");
     if(!infile){
         std::cout << "file cannot open" << std::endl;
     }
