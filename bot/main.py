@@ -15,16 +15,16 @@ import bot
 url = ''
 username = ''
 password = ''
-listen_CID = 0
+listen_CID = 17
 
 
 # init bot
 B = bot.bot()
 
-lib = ctypes.cdll.LoadLibrary('./templatematch_bot/T_bot_pyCall.so')
+lib = ctypes.CDLL('./templatematch_bot/T_bot_pyCall.so')
 objptr = lib.newTBot()
 
-choice = True
+choice = False
 
 def on_open(ws):
     print('connect success!')
@@ -35,6 +35,8 @@ def on_error(ws, error):
 
 
 def on_message(ws, json_data):
+    # global
+    global choice
     data = loads(json_data)
     # print(data)
     # sleep(10)
@@ -60,17 +62,18 @@ def on_message(ws, json_data):
             if 'messages' in data['body'] and data['body']['messages'][0]['direction'] == 'In':
                 for elem in data['body']['messages'][0]['segments']:
                     if elem['type'] == 'plaintext':
-                        # Call bot for answer and send the answer
+                            # Call bot for answer and send the answer
                         if (elem['content']['text'] == 'change bot'):
-                            choice = !choice
+                            choice = not choice
                         else:
                             if (choice):
                                 answer = B.speak(elem['content']['text'])
                             else:
                                 instr = bytes(elem['content']['text'], encoding='utf8')
-                                outstr = create_string_buffer(" ", 100)
+                                outstr = bytes(100)
                                 lib.call(objptr, instr, outstr)
-                                answer = outstr.value
+                                # print(outstr.decode())
+                                answer = outstr.decode()
                             message_content = {}
                             message_content['text'] = answer
                             message_segment = {}
