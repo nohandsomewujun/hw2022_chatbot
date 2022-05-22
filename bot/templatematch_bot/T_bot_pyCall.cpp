@@ -12,15 +12,13 @@ extern "C" {
     }
     
     void call(T_bot* bot, char* str, char* dst) {
-        T_bot b;
         string in;
         for(int i = 0; i < 10 && str[i] != 0; i++) {
             in = in + str[i];
         }
         cout << "in: " << in << endl;
 
-// bot->calculate_score(string("asd"));
-        string out = b.speak(in);
+        string out = bot->speak(in);
         cout << "out: " << out << endl;
 
         strcpy(dst, out.c_str());

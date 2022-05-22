@@ -7,10 +7,9 @@ from requests import utils
 from json import loads
 import os
 from requests_toolbelt import MultipartEncoder
-import ctypes
-from ctypes import *
 
 import bot
+import T_bot
 
 url = ''
 username = ''
@@ -20,9 +19,7 @@ listen_CID = 17
 
 # init bot
 B = bot.bot()
-
-lib = ctypes.CDLL('./templatematch_bot/T_bot_pyCall.so')
-objptr = lib.newTBot()
+TB = T_bot.T_bot()
 
 choice = False
 
@@ -69,11 +66,7 @@ def on_message(ws, json_data):
                             if (choice):
                                 answer = B.speak(elem['content']['text'])
                             else:
-                                instr = bytes(elem['content']['text'], encoding='utf8')
-                                outstr = bytes(100)
-                                lib.call(objptr, instr, outstr)
-                                # print(outstr.decode())
-                                answer = outstr.decode()
+                                answer = TB.speak(elem['content']['text'])
                             message_content = {}
                             message_content['text'] = answer
                             message_segment = {}
