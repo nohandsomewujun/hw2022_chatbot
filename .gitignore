@@ -9,3 +9,4 @@ CMakeLists.txt
 .vscode/
 */.vscode/
 */.obsidian/
+.obsidian/
