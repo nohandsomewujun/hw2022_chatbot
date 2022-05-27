@@ -1,5 +1,6 @@
 #include "T_bot.h"
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <stdio.h>
 
