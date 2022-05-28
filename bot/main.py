@@ -9,15 +9,19 @@ import os
 from requests_toolbelt import MultipartEncoder
 
 import bot
+import T_bot
 
 url = ''
 username = ''
 password = ''
-listen_CID = 0
+listen_CID = 17
 
 
 # init bot
 B = bot.bot()
+TB = T_bot.T_bot()
+
+choice = False
 
 def on_open(ws):
     print('connect success!')
@@ -28,6 +32,8 @@ def on_error(ws, error):
 
 
 def on_message(ws, json_data):
+    # global
+    global choice
     data = loads(json_data)
     # print(data)
     # sleep(10)
@@ -53,27 +59,33 @@ def on_message(ws, json_data):
             if 'messages' in data['body'] and data['body']['messages'][0]['direction'] == 'In':
                 for elem in data['body']['messages'][0]['segments']:
                     if elem['type'] == 'plaintext':
-                        # Call bot for answer and send the answer
-                        answer = B.speak(elem['content']['text'])
-                        message_content = {}
-                        message_content['text'] = answer
-                        message_segment = {}
-                        message_segment['type'] = 'plaintext'
-                        message_segment['content'] = message_content
-                        message = {}
-                        message['segments'] = [message_segment]
-                        segments = []
-                        segments.append(message)
-                        body = {}
-                        body['_CID'] = listen_CID
-                        body['message'] = message
-                        data_send = {'cmd': 'post_message', 'body': body}
-                        json_data_send = dumps(data_send)
-                        try:
-                            ws.send(json_data_send)
-                        except:
-                            print('connection is already closed.')
-                            sys.exit(0)
+                            # Call bot for answer and send the answer
+                        if (elem['content']['text'] == 'change bot'):
+                            choice = not choice
+                        else:
+                            if (choice):
+                                answer = B.speak(elem['content']['text'])
+                            else:
+                                answer = TB.speak(elem['content']['text'])
+                            message_content = {}
+                            message_content['text'] = answer
+                            message_segment = {}
+                            message_segment['type'] = 'plaintext'
+                            message_segment['content'] = message_content
+                            message = {}
+                            message['segments'] = [message_segment]
+                            segments = []
+                            segments.append(message)
+                            body = {}
+                            body['_CID'] = listen_CID
+                            body['message'] = message
+                            data_send = {'cmd': 'post_message', 'body': body}
+                            json_data_send = dumps(data_send)
+                            try:
+                                ws.send(json_data_send)
+                            except:
+                                print('connection is already closed.')
+                                sys.exit(0)
 
 
 
