@@ -3,6 +3,48 @@
 工作量1:1:1
 本次实验全部数据代码等内容可见Github [hw2022_chatbot](https://github.com/nohandsomewujun/hw2022_chatbot)
 
+
+## 代码结构
+```bash
+.
+├── T_bot.py
+├── __pycache__
+│   ├── T_bot.cpython-39.pyc
+│   └── bot.cpython-39.pyc
+├── bot.py
+├── data
+│   ├── cornell movie-dialogs corpus
+│   │   ├── README.txt
+│   │   ├── chameleons.pdf
+│   │   ├── formatted_movie_lines.txt
+│   │   ├── movie_characters_metadata.txt
+│   │   ├── movie_conversations.txt
+│   │   ├── movie_lines.txt
+│   │   ├── movie_titles_metadata.txt
+│   │   └── raw_script_urls.txt
+│   └── save
+│       ├── README.md
+│       └── cb_model
+│           └── cornell movie-dialogs corpus
+│               └── 2-2_500
+│                   └── 5000_checkpoint.tar
+├── main.py
+├── templatematch_bot
+│   ├── Makefile
+│   ├── T_bot.cpp
+│   ├── T_bot.h
+│   ├── T_bot_pyCall.cpp
+│   ├── T_bot_pyCall.so
+│   ├── q&a
+│   │   ├── README.md
+│   │   └── qa.txt
+│   └── test.cpp
+├── test.py
+└── train.ipynb
+
+9 directories, 25 files
+```
+
 ## NLP 部分
 该部分负责人：吴骏。
 这一部分内容教程参考pytorch官方主页中的 [pytorch_tutorial_CHATBOT TUTORIAL](https://pytorch.org/tutorials/beginner/chatbot_tutorial.html)。
@@ -80,7 +122,7 @@
 运行repo里的 `train.ipynb` 即可。（模型太大放不到GitHub上，需要请联系本人。
 
 ### 使用该部分机器人
-我们将repo中的bot封装成一个类，运行repo中`test.py`即可实现*string -> string*的聊天问答。
+我们将repo中的bot的计算部分封装成了一个类，运行repo中`test.py`即可实现*string -> string*的聊天问答。（这里我们在封装的时候利用Googletrans库来实现中文支持）
 ```python
 import bot
 a = bot.bot()
@@ -94,15 +136,74 @@ while True:
 
 
 ## 字符串匹配部分
+### 实现思路
+
+该部分使用的语言是c++，我们使用c++封装了一个T-bot类，该类中存在一个方法可以根据传入的字符串（问题）返回相应的字符串（答案），从而实现对话的功能。那么如何根据传入的字符串返回出符合要求的字符串呢？我们实现的思路是将一系列问题-答案存入到文件qa.txt中作为数据集。具体形式如下：
+![](image-20220522124821418.png)
+
+从上方的图片中我们可以注意到几个细节，1.问题的长度均为10个汉字。2.一个问题可以对应多个答案。细节1是为了方便为每个问题打分。 T_bot在实例化时会从该文件读取问题-答案数据集，将其存入到map中。在得到数据之后，我们根据设计的策略（具体的策略单独详细介绍）对每个问题进行打分，之后会选取得分最高的问题，从该问题对应的答案中随机选取一个作为最后的答案（即返回的字符串）。
+
+### 打分策略
+
+在实现思路中，我们知道需要对每个问题进行打分。在这里，数据集每个问题的得分代表了该问题与真实问题的匹配程度。这将直接影响到聊天机器人回答问题的质量，所以这一部分尤为重要。从上方的图片中我们可以注意到数据集的几个细节，1.问题的长度均为10个汉字。2.一个问题可以对应多个答案。3.有的问题中有重复的字符。这些与我们的打分策略有关。
+
+我们的打分策略是根据数据集中每个问题中的字符在真实问题中是否出现进行打分，有多少字符在真实问题中出现就得多少分。若数据集某个问题有10个字符，其中有6个字符在真实问题中出现了，则该问题的得分为6分。到这里，就可以解释上面说到的数据集中的三个细节。细节1固定了问题的长度，使得每个问题的最高得分相同，保证了问题间的公平性；细节2使得对于同一个问题的回答具有多样性；细节3是由于有些问题的字符数不足10个，则需要补全，所以我们需要提取问题中的关键字，用关键字将问题补全。这样做不仅使得问题的字符数满足要求同时也提高了匹配的准确度。
+
+### 代码框架介绍
+
+#### 类的定义
+![](截屏2022-06-02%20上午9.47.56.png)
 
 
+##### 变量
+qa_map用来存储问题-答案数据，highest_score_q用来存放得分最大的问题string。
+##### 函数：
+*read_qa_into_map() :* 从qa.txt中读取数据并将其存入到qa_map中。
+
+*T_bot：* 构造函数调用read_qa_into_map() 。
+
+*calculate_score(const std::string& input_s)：* 根据传入的问题字符串计算每个问题的得分，将得分最高的问题字符串存入到highest_score_q。
+
+*speak(const std::string& input_s)：* 从得分最高的问题中随机选取一个问题，再从问题的对应的答案中随机选取一个答案字符串，作为最后的字符串返回。
+
+
+### 运行该部分bot
+```bash
+g++ test.cpp T_bot.cpp -o 1
+./1
+```
+repo文件夹中的test.cpp即运行该部分bot。
 
 
 ## 接入 QQ 部分
 
-使用 [OneMessage](https://github.com/Hyffer/OneMessage_Server) 项目接入 QQ，收到消息时调用聊天机器人并回复
+### 服务器
+使用 [OneMessage](https://github.com/Hyffer/OneMessage_Server) 项目接入 QQ，收到消息时按照约定好的协议来通知client发送消息给服务器再转接给qq。（该项目也是我们一个组员写的
 
-基于 QQ 协议支持库：[Mirai](https://github.com/mamoe/mirai)
+### 如何与QQ交互
+我们使用了基于 QQ的 协议支持库：[Mirai](https://github.com/mamoe/mirai)
+
+### client
+客户端利用python的websocket-client的第三方库，利用websocket建立稳定的长连接，对服务器发送过来的消息进行特定协议的解析，再根据问题分别调用不同的bot来产生回答，转发给服务器，再由服务器发送给QQ端。
+
+### 调用bot
+对于如何在客户端里调用bot，对于python封装的类来说，这非常简单，直接调用即可。但对于c++部分的bot来说，这有些困难。我们在这里使用了ctypes的这个python第三方库，再编写`makefile`，将c++部分编译成`.so`文件，即共享对象，利用动态链接的知识将其在python中调用。
+
+## 总体效果与编译过程展示
+首先需要进入到templatematch_bot的目录，执行
+```bash
+make clean
+make
+```
+再进入bot目录下，执行（前提是联系好我们开了服务器）
+```bash
+python3 main.py
+```
+添加我们bot的好友，发送消息，根据终端输出的值更改代码中listen_CID的值，然后关闭客户端，重启客户端即可。
+下面是具体编译过程：
+![](截屏2022-06-02%20上午10.41.55.png)
+17为我的QQ对应bot的CID值，如果要自己复现结果需要根据CID值来更改main.py代码中的一个变量即可。
+效果展示：输入的比较少，如果想问更多的问题来测试回答的逻辑性请自己尝试(每次发送change bot后会在深度学习的机器人回答和cpp的模式匹配机器人回答两种模式切换)
+![](78E87C02C07E339566C51069F3E43B55.png)
 
 
-## 总体效果
